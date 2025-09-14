@@ -1,0 +1,29 @@
+# 模型训练时使用的yaml配置文件。该文件说明了数据的地址和待训练的类别
+
+# 数据集的根路径
+path: 'D:\innovaton_competetion\ultralytics-main\css-data'
+
+# 配置三个路径，分别对应训练数据、验证数据、测试数据的地址
+# 训练数据用于模型的训练
+train: 'D:\innovaton_competetion\ultralytics-main\css-data\train\images'
+
+# 验证数据用于模型训练过程中的评估和参数调试
+val: 'D:\innovaton_competetion\ultralytics-main\css-data\valid\images'
+# 测试数据用于模型完成训练后的测试
+test: 'D:\innovaton_competetion\ultralytics-main\css-data\test\images'
+
+# number of classes
+nc: 10
+# 0-9分别指代下面的类型，注意Hardhat和NO-Hardhat（0和2）
+# class names#names: ['0','1','2','3','4','5','6','7','8','9']
+#Hardhat - 安全帽
+#Mask - 口罩
+#NO-Hardhat - 无安全帽
+#NO-Mask - 无口罩
+#NO-Safety Vest - 无安全背心
+#Person - 人
+#Safety Cone - 安全锥
+#Safety Vest - 安全背心
+#machinery - 机械(挖掘机)
+#vehicle - 车辆
+names: [Hardhat, Mask, NO-Hardhat, NO-Mask, NO-Safety Vest, Person, Safety Cone, Safety Vest, machinery, vehicle]

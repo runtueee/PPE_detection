@@ -1,0 +1,16 @@
+path: D:\innovaton_competetion\ultralytics-main\css-data-sliced
+train: D:\innovaton_competetion\ultralytics-main\css-data-sliced\train\images
+val: D:\innovaton_competetion\ultralytics-main\css-data-sliced\val\images
+test: D:\innovaton_competetion\ultralytics-main\css-data-sliced\test\images
+nc: 10
+names:
+- Hardhat
+- Mask
+- NO-Hardhat
+- NO-Mask
+- NO-Safety Vest
+- Person
+- Safety Cone
+- Safety Vest
+- machinery
+- vehicle
