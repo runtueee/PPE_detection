@@ -1,16 +1,13 @@
-import os
-import math
 import argparse
-import shutil
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import Optional
 
 import yaml
 from PIL import Image
 
 
 def load_yaml(yaml_path: Path) -> dict:
-    with open(yaml_path, "r", encoding="utf-8") as f:
+    with open(yaml_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -20,7 +17,7 @@ def save_yaml(obj: dict, yaml_path: Path) -> None:
         yaml.safe_dump(obj, f, allow_unicode=True, sort_keys=False)
 
 
-def yolo_line_to_box(line: str, image_w: int, image_h: int) -> Tuple[int, float, float, float, float]:
+def yolo_line_to_box(line: str, image_w: int, image_h: int) -> tuple[int, float, float, float, float]:
     parts = line.strip().split()
     if len(parts) != 5:
         raise ValueError(f"Invalid YOLO label line: {line}")
@@ -49,8 +46,9 @@ def box_to_yolo_line(cls: int, x1: float, y1: float, x2: float, y2: float, tile_
     return f"{cls} {nx:.6f} {ny:.6f} {nw:.6f} {nh:.6f}"
 
 
-def intersect_box(b1: Tuple[float, float, float, float],
-                  b2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
+def intersect_box(
+    b1: tuple[float, float, float, float], b2: tuple[float, float, float, float]
+) -> tuple[float, float, float, float]:
     x1 = max(b1[0], b2[0])
     y1 = max(b1[1], b2[1])
     x2 = min(b1[2], b2[2])
@@ -60,7 +58,7 @@ def intersect_box(b1: Tuple[float, float, float, float],
     return x1, y1, x2, y2
 
 
-def slice_grid(image_w: int, image_h: int, tile: int, overlap: float) -> List[Tuple[int, int, int, int]]:
+def slice_grid(image_w: int, image_h: int, tile: int, overlap: float) -> list[tuple[int, int, int, int]]:
     stride = int(tile * (1.0 - overlap))
     stride = max(1, stride)
     boxes = []
@@ -77,14 +75,16 @@ def slice_grid(image_w: int, image_h: int, tile: int, overlap: float) -> List[Tu
     return boxes
 
 
-def process_split(split_name: str,
-                  images_dir: Path,
-                  labels_dir: Path,
-                  out_images_dir: Path,
-                  out_labels_dir: Path,
-                  tile: int,
-                  overlap: float,
-                  min_area_ratio: float) -> Tuple[int, int]:
+def process_split(
+    split_name: str,
+    images_dir: Path,
+    labels_dir: Path,
+    out_images_dir: Path,
+    out_labels_dir: Path,
+    tile: int,
+    overlap: float,
+    min_area_ratio: float,
+) -> tuple[int, int]:
     out_images_dir.mkdir(parents=True, exist_ok=True)
     out_labels_dir.mkdir(parents=True, exist_ok=True)
 
@@ -102,7 +102,7 @@ def process_split(split_name: str,
             # still slice image but will produce empty labels
             labels = []
         else:
-            with open(label_p, "r", encoding="utf-8") as f:
+            with open(label_p, encoding="utf-8") as f:
                 labels = [ln.strip() for ln in f.readlines() if ln.strip()]
 
         try:
@@ -134,7 +134,7 @@ def process_split(split_name: str,
             out_lbl_path = out_labels_dir / out_lbl_name
 
             # remap labels
-            out_lines: List[str] = []
+            out_lines: list[str] = []
             tile_box = (x1t, y1t, x2t, y2t)
             for cls, bx1, by1, bx2, by2 in parsed:
                 inter = intersect_box((bx1, by1, bx2, by2), tile_box)
@@ -190,7 +190,9 @@ def main():
     parser.add_argument("--dst-dir", type=str, required=True, help="Output directory for sliced dataset")
     parser.add_argument("--tile", type=int, default=640, help="Tile size (square)")
     parser.add_argument("--overlap", type=float, default=0.2, help="Overlap ratio between tiles [0,1)")
-    parser.add_argument("--min-area", type=float, default=0.1, help="Minimum retained area ratio of object inside a tile")
+    parser.add_argument(
+        "--min-area", type=float, default=0.1, help="Minimum retained area ratio of object inside a tile"
+    )
     args = parser.parse_args()
 
     src_yaml = Path(args.src_yaml)
@@ -236,8 +238,16 @@ def main():
         labels_dir = split_root / "labels"
         out_images_dir = dst_root / split / "images"
         out_labels_dir = dst_root / split / "labels"
-        ni, no = process_split(split, img_dir, labels_dir, out_images_dir, out_labels_dir,
-                               tile=args.tile, overlap=args.overlap, min_area_ratio=args.min_area)
+        ni, no = process_split(
+            split,
+            img_dir,
+            labels_dir,
+            out_images_dir,
+            out_labels_dir,
+            tile=args.tile,
+            overlap=args.overlap,
+            min_area_ratio=args.min_area,
+        )
         print(f"[{split}] images_in={ni} tiles_out={no}")
 
     # Write output yaml
@@ -246,13 +256,9 @@ def main():
     print(f"Wrote sliced dataset yaml: {dst_root / 'data.yaml'}")
 
 
-'''
+"""
 python generate_sliced_dataset.py --src-yaml "D:/innovaton_competetion/ultralytics-main/css-data-split/data.yaml" --dst-dir "D:/innovaton_competetion/ultralytics-main/css-data-sliced" --tile 640 --overlap 0.20 --min-area 0.10
-'''
+"""
 
 if __name__ == "__main__":
     main()
-
-
-
-

@@ -1,10 +1,11 @@
 # yolo_train.py
-from ultralytics import YOLO
+
 import torch
-import os
+
+from ultralytics import YOLO
 
 # DATA_YAML = r"D:\innovaton_competetion\ultralytics-main\css-data\safeHat.yaml"
-DATA_YAML = r"D:\innovaton_competetion\ultralytics-main\css-data-split\data.yaml" # 换成划分之后的了
+DATA_YAML = r"D:\innovaton_competetion\ultralytics-main\css-data-split\data.yaml"  # 换成划分之后的了
 # MODEL_WEIGHTS = r"D:\innovaton_competetion\ultralytics-main\yolov8n.pt"  # 请改成你本地 yolov8n.pt 的绝对路径
 MODEL_WEIGHTS = r"D:\innovaton_competetion\ultralytics-main\yolov8s.pt"  # 用v8s来做消融对比实验
 # MODEL_WEIGHTS = r"D:\innovaton_competetion\ultralytics-main\runs\train\safeHat_exp_batch43\weights\last.pt"  # 请改成你本地 yolov8n.pt 的绝对路径
@@ -34,11 +35,7 @@ SEED = 42
 
 
 def build_experiment_name(base_name: str) -> str:
-    """
-    构建实验名称，根据是否启用切片训练和copy-paste增强自动添加后缀。
-    :param base_name: 实验基础名称
-    :return: 带后缀的实验名称
-    """
+    """构建实验名称，根据是否启用切片训练和copy-paste增强自动添加后缀。 :param base_name: 实验基础名称 :return: 带后缀的实验名称."""
     suffixes = []  # 用于存储所有需要添加的后缀
     if ENABLE_TILING_TRAIN:
         # 如果启用切片训练，添加"tile"后缀
@@ -52,6 +49,7 @@ def build_experiment_name(base_name: str) -> str:
 
 BASE_NAME = "PPE_exp_yolov8s"  # 实验基础名称
 NAME = build_experiment_name(BASE_NAME)  # 最终实验名称，包含后缀
+
 
 def main():
     device = 0 if torch.cuda.is_available() else "cpu"
@@ -75,8 +73,9 @@ def main():
         name=NAME,
         plots=True,
         seed=SEED,
-        copy_paste=(COPY_PASTE_P if ENABLE_COPY_PASTE else 0.0)
+        copy_paste=(COPY_PASTE_P if ENABLE_COPY_PASTE else 0.0),
     )
+
 
 if __name__ == "__main__":
     main()
