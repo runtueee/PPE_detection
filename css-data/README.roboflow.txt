@@ -29,7 +29,7 @@ The following augmentation was applied to create 5 versions of each source image
 * Randomly crop between 0 and 20 percent of the image
 * Random rotation of between -12 and +12 degrees
 * Random shear of between -2° to +2° horizontally and -2° to +2° vertically
-* Random brigthness adjustment of between -25 and +25 percent
+* Random brightness adjustment of between -25 and +25 percent
 * Random exposure adjustment of between -20 and +20 percent
 * Random Gaussian blur of between 0 and 0.5 pixels
 
