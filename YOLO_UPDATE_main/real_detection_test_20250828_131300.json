@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-08-28T13:13:00.596308",
+  "test_type": "real_image_detection_test",
+  "results": {
+    "标准模式": {
+      "success": true,
+      "detections": {
+        "Hardhat": 2,
+        "NO-Mask": 1,
+        "NO-Safety Vest": 2,
+        "Person": 4
+      },
+      "image_length": 119184,
+      "analysis": {
+        "recommendations": [
+          "要求所有人员必须佩戴口罩",
+          "要求所有人员必须穿安全背心",
+          "检测到 2 人正确佩戴安全帽，继续保持"
+        ],
+        "safety_score": 60,
+        "safety_violations": [
+          "检测到 1 人未佩戴口罩",
+          "检测到 2 人未穿安全背心"
+        ]
+      }
+    },
+    "智能模式": {
+      "success": true,
+      "detections": {
+        "Hardhat": 2,
+        "NO-Mask": 1,
+        "NO-Safety Vest": 2,
+        "Person": 4
+      },
+      "image_length": 119184,
+      "analysis": {
+        "recommendations": [
+          "要求所有人员必须佩戴口罩",
+          "要求所有人员必须穿安全背心",
+          "检测到 2 人正确佩戴安全帽，继续保持"
+        ],
+        "safety_score": 60,
+        "safety_violations": [
+          "检测到 1 人未佩戴口罩",
+          "检测到 2 人未穿安全背心"
+        ]
+      }
+    },
+    "高质量模式": {
+      "success": true,
+      "detections": {
+        "Hardhat": 2,
+        "NO-Mask": 1,
+        "NO-Safety Vest": 2,
+        "Person": 5
+      },
+      "image_length": 120052,
+      "analysis": {
+        "recommendations": [
+          "要求所有人员必须佩戴口罩",
+          "要求所有人员必须穿安全背心",
+          "检测到 2 人正确佩戴安全帽，继续保持"
+        ],
+        "safety_score": 60,
+        "safety_violations": [
+          "检测到 1 人未佩戴口罩",
+          "检测到 2 人未穿安全背心"
+        ]
+      }
+    }
+  }
+}

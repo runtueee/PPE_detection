@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-08-28T13:05:51.479399",
+  "analysis_type": "detection_modes_code_analysis",
+  "endpoints_found": {
+    "/detect_small_objects": {
+      "function_name": "detect_small_objects",
+      "line_start": 326,
+      "line_end": 356
+    },
+    "/smart_video_feed": {
+      "function_name": "smart_video_feed",
+      "line_start": 359,
+      "line_end": 396
+    },
+    "/video_feed": {
+      "function_name": "video_feed",
+      "line_start": 399,
+      "line_end": 422
+    }
+  },
+  "process_image_calls": 7,
+  "differences": {
+    "backend_endpoints": {
+      "normal_mode": {
+        "endpoint": "/video_feed",
+        "description": "标准检测端点",
+        "parameters": "process_image(image_data) - 使用默认参数",
+        "conf_threshold": "0.25 (默认)",
+        "iou_threshold": "0.45 (默认)"
+      },
+      "smart_mode": {
+        "endpoint": "/smart_video_feed",
+        "description": "智能检测端点 - 带跳帧逻辑",
+        "parameters": "process_image(image_data) + frame_count判断",
+        "conf_threshold": "0.25 (默认)",
+        "iou_threshold": "0.45 (默认)",
+        "special_logic": "每2帧处理一次，奇数帧返回{processed: false}"
+      },
+      "high_quality_mode": {
+        "endpoint": "/detect_small_objects",
+        "description": "小目标检测端点 - 优化参数",
+        "parameters": "process_image(image_data, conf_threshold=0.15, iou_threshold=0.3)",
+        "conf_threshold": "0.15 (更低，检测更多目标)",
+        "iou_threshold": "0.3 (更严格，减少重复检测)",
+        "special_logic": "专门用于小目标和远距离检测"
+      }
+    },
+    "frontend_logic": {
+      "normal_mode": {
+        "endpoint_call": "/video_feed",
+        "frame_processing": "每帧都处理",
+        "request_data": "{ image: imageData }"
+      },
+      "smart_mode": {
+        "endpoint_call": "/smart_video_feed",
+        "frame_processing": "每2帧处理一次，或距离上次检测超过300ms",
+        "request_data": "{ image: imageData, frame_count: frameCount }",
+        "skip_logic": "奇数帧在前端跳过或后端返回processed: false"
+      },
+      "high_quality_mode": {
+        "endpoint_call": "/detect_small_objects",
+        "frame_processing": "每帧都处理",
+        "request_data": "{ image: imageData }",
+        "optimization": "使用优化的检测参数"
+      }
+    }
+  },
+  "conclusion": {
+    "is_real_implementation": true,
+    "evidence": [
+      "三种模式使用不同的后端端点 (/video_feed, /smart_video_feed, /detect_small_objects)",
+      "高质量模式使用更低的置信度阈值 (0.15 vs 0.25)",
+      "智能模式实现了跳帧逻辑 (frame_count % 2 == 0)",
+      "前端根据performanceMode变量动态切换端点",
+      "每种模式都有不同的参数和处理逻辑"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-08-28T13:04:43.687400",
+  "test_type": "detection_modes_backend_verification",
+  "test_results": [
+    {
+      "success": false,
+      "error": "{\n  \"error\": \"\\u6a21\\u578b\\u672a\\u52a0\\u8f7d\"\n}\n",
+      "mode": "标准模式"
+    },
+    {
+      "success": true,
+      "processed": false,
+      "response_time": 4.999876022338867,
+      "endpoint": "/smart_video_feed",
+      "mode": "智能模式",
+      "skip_reason": "Frame skipped for performance"
+    },
+    {
+      "success": false,
+      "error": "{\n  \"error\": \"\\u6a21\\u578b\\u672a\\u52a0\\u8f7d\"\n}\n",
+      "mode": "智能模式(偶数帧)"
+    },
+    {
+      "success": false,
+      "error": "{\n  \"error\": \"\\u6a21\\u578b\\u672a\\u52a0\\u8f7d\"\n}\n",
+      "mode": "高质量模式"
+    }
+  ],
+  "summary": {
+    "total_tests": 4,
+    "successful_tests": 1,
+    "failed_tests": 3,
+    "processed_tests": 3,
+    "skipped_tests": 1
+  }
+}

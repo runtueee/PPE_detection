@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>检测模式测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .mode-selector {
+            margin: 10px 0;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>检测模式测试页面</h1>
+    
+    <div class="test-section">
+        <h2>模式选择</h2>
+        <div class="mode-selector">
+            <input type="radio" id="normal" name="mode" value="normal" checked>
+            <label for="normal">标准模式</label>
+            
+            <input type="radio" id="smart" name="mode" value="smart">
+            <label for="smart">智能模式</label>
+            
+            <input type="radio" id="high_quality" name="mode" value="high_quality">
+            <label for="high_quality">高质量模式</label>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试控制</h2>
+        <button id="testBtn">测试当前模式</button>
+        <button id="clearBtn">清除结果</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试结果</h2>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let currentMode = 'normal';
+        
+        // 监听模式选择
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                currentMode = e.target.value;
+                console.log('切换到模式:', currentMode);
+                addResult('info', `已切换到${getModeName(currentMode)}`);
+            });
+        });
+        
+        // 测试按钮
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            await testCurrentMode();
+        });
+        
+        // 清除按钮
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('results').innerHTML = '';
+        });
+        
+        async function testCurrentMode() {
+            const testBtn = document.getElementById('testBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = '测试中...';
+            
+            try {
+                addResult('info', `开始测试${getModeName(currentMode)}...`);
+                
+                // 创建测试图像数据
+                const canvas = document.createElement('canvas');
+                canvas.width = 640;
+                canvas.height = 480;
+                const ctx = canvas.getContext('2d');
+                
+                // 绘制简单的测试图像
+                ctx.fillStyle = '#808080';
+                ctx.fillRect(0, 0, 640, 480);
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(100, 100, 100, 100);
+                ctx.fillStyle = '#00ff00';
+                ctx.beginPath();
+                ctx.arc(400, 300, 50, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // 根据模式选择端点
+                let endpoint, requestData;
+                
+                switch (currentMode) {
+                    case 'smart':
+                        endpoint = '/smart_video_feed';
+                        requestData = {
+                            image: imageData,
+                            frame_count: 1
+                        };
+                        break;
+                    case 'high_quality':
+                        endpoint = '/detect_small_objects';
+                        requestData = {
+                            image: imageData
+                        };
+                        break;
+                    default:
+                        endpoint = '/video_feed';
+                        requestData = {
+                            image: imageData
+                        };
+                        break;
+                }
+                
+                console.log('发送请求到:', endpoint);
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                addResult('success', `${getModeName(currentMode)}测试成功！`);
+                addResult('info', `检测结果: ${JSON.stringify(result.detections || {})}`);
+                
+                if (result.processed === false) {
+                    addResult('info', '智能模式：跳过处理');
+                }
+                
+            } catch (error) {
+                console.error('测试错误:', error);
+                addResult('error', `测试失败: ${error.message}`);
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '测试当前模式';
+            }
+        }
+        
+        function addResult(type, message) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function getModeName(mode) {
+            switch (mode) {
+                case 'normal':
+                    return '标准模式';
+                case 'smart':
+                    return '智能模式';
+                case 'high_quality':
+                    return '高质量模式';
+                default:
+                    return '标准模式';
+            }
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', () => {
+            addResult('info', '测试页面已加载，请选择模式并点击测试按钮');
+        });
+    </script>
+</body>
+</html>
