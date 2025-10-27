@@ -5,13 +5,9 @@
       "success": true,
       "result": {
         "analysis": {
-          "recommendations": [
-            "要求所有人员必须穿安全背心"
-          ],
+          "recommendations": ["要求所有人员必须穿安全背心"],
           "safety_score": 80,
-          "safety_violations": [
-            "检测到 1 人未穿安全背心"
-          ]
+          "safety_violations": ["检测到 1 人未穿安全背心"]
         },
         "detections": {
           "NO-Safety Vest": 1
@@ -23,13 +19,9 @@
       "success": true,
       "result": {
         "analysis": {
-          "recommendations": [
-            "要求所有人员必须穿安全背心"
-          ],
+          "recommendations": ["要求所有人员必须穿安全背心"],
           "safety_score": 80,
-          "safety_violations": [
-            "检测到 1 人未穿安全背心"
-          ]
+          "safety_violations": ["检测到 1 人未穿安全背心"]
         },
         "detections": {
           "NO-Safety Vest": 1
@@ -42,13 +34,9 @@
       "success": true,
       "result": {
         "analysis": {
-          "recommendations": [
-            "要求所有人员必须穿安全背心"
-          ],
+          "recommendations": ["要求所有人员必须穿安全背心"],
           "safety_score": 80,
-          "safety_violations": [
-            "检测到 1 人未穿安全背心"
-          ]
+          "safety_violations": ["检测到 1 人未穿安全背心"]
         },
         "detection_mode": "small_objects",
         "detections": {

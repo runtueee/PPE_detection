@@ -1,741 +1,920 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>施工现场安全监控系统 - YOLOv8实时检测</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <div class="app-container">
-        <!-- 固定头部区域 -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-hard-hat"></i>
-                    <h1>施工现场安全监控系统</h1>
-                </div>
-                <p class="subtitle">基于YOLOv8的实时目标检测与安全监控</p>
+      <!-- 固定头部区域 -->
+      <header class="header">
+        <div class="header-content">
+          <div class="logo">
+            <i class="fas fa-hard-hat"></i>
+            <h1>施工现场安全监控系统</h1>
+          </div>
+          <p class="subtitle">基于YOLOv8的实时目标检测与安全监控</p>
+        </div>
+      </header>
+
+      <!-- 固定功能标签页 -->
+      <nav class="feature-tabs">
+        <button class="tab-btn active" data-tab="realtime">
+          <i class="fas fa-video"></i>
+          实时检测
+        </button>
+        <button class="tab-btn" data-tab="site-monitoring">
+          <i class="fas fa-hard-hat"></i>
+          工地现场监控
+        </button>
+        <button class="tab-btn" data-tab="upload">
+          <i class="fas fa-upload"></i>
+          图片检测
+        </button>
+        <button class="tab-btn" data-tab="batch">
+          <i class="fas fa-images"></i>
+          批量检测
+        </button>
+      </nav>
+
+      <!-- 可滚动的主要内容区域 -->
+      <main class="scrollable-content">
+        <!-- 实时检测区域 -->
+        <div class="tab-content active" id="realtime-tab">
+          <!-- 检测模式选择区域 -->
+          <section class="detection-mode-section">
+            <div class="mode-header">
+              <h3>检测模式选择</h3>
+              <div class="current-mode-indicator">通用模型</div>
             </div>
-        </header>
-
-        <!-- 固定功能标签页 -->
-        <nav class="feature-tabs">
-            <button class="tab-btn active" data-tab="realtime">
-                <i class="fas fa-video"></i>
-                实时检测
-            </button>
-            <button class="tab-btn" data-tab="site-monitoring">
-                <i class="fas fa-hard-hat"></i>
-                工地现场监控
-            </button>
-            <button class="tab-btn" data-tab="upload">
-                <i class="fas fa-upload"></i>
-                图片检测
-            </button>
-            <button class="tab-btn" data-tab="batch">
-                <i class="fas fa-images"></i>
-                批量检测
-            </button>
-        </nav>
-
-        <!-- 可滚动的主要内容区域 -->
-        <main class="scrollable-content">
-            <!-- 实时检测区域 -->
-            <div class="tab-content active" id="realtime-tab">
-                <!-- 检测模式选择区域 -->
-                <section class="detection-mode-section">
-                    <div class="mode-header">
-                        <h3>检测模式选择</h3>
-                        <div class="current-mode-indicator">通用模型</div>
-                    </div>
-                    <div class="mode-options">
-                        <label class="mode-option">
-                            <input type="radio" name="performance-mode" value="normal" checked>
-                            <span class="mode-label">
-                                <i class="fas fa-magic"></i>
-                                通用模型
-                            </span>
-                            <span class="mode-desc">综合性能最好 鲁棒性高</span>
-                        </label>
-                        <label class="mode-option">
-                            <input type="radio" name="performance-mode" value="smart">
-                            <span class="mode-label">
-                                <i class="fas fa-bolt"></i>
-                                轻量化模型
-                            </span>
-                            <span class="mode-desc">速度最快</span>
-                        </label>
-                        <label class="mode-option">
-                            <input type="radio" name="performance-mode" value="high_quality">
-                            <span class="mode-label">
-                                <i class="fas fa-crosshairs"></i>
-                                小目标模型
-                            </span>
-                            <span class="mode-desc">聚焦小目标性能高的</span>
-                        </label>
-                    </div>
-                </section>
-
-                <!-- 实时监控和检测结果区域 -->
-                <section class="monitoring-section">
-                    <div class="monitoring-layout">
-                        <!-- 左侧：实时监控 -->
-                        <div class="video-section">
-                            <h3>实时监控</h3>
-                            <div class="video-container">
-                                <div class="video-wrapper">
-                                    <video id="video" autoplay muted playsinline></video>
-                                    <canvas id="canvas" style="display: none;"></canvas>
-                                    <div class="video-overlay">
-                                        <div class="camera-status" id="camera-status">
-                                            <i class="fas fa-camera"></i>
-                                            <span>等待摄像头权限...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="video-controls">
-                                    <button id="start-btn" class="btn btn-primary" disabled>
-                                        <i class="fas fa-play"></i> 开始检测
-                                    </button>
-                                    <button id="stop-btn" class="btn btn-secondary" disabled>
-                                        <i class="fas fa-stop"></i> 停止检测
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 右侧：检测结果 -->
-                        <div class="result-section">
-                            <h3>检测结果</h3>
-                            <div class="result-container">
-                                <div class="result-image-container">
-                                    <img id="result-image" src="" alt="检测结果" style="display: none;">
-                                    <div id="result-placeholder" class="result-placeholder">
-                                        <i class="fas fa-eye"></i>
-                                        <p>检测结果将在这里显示</p>
-                                    </div>
-                                </div>
-                                <div class="detection-stats" id="detection-stats"></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 检测统计和安全评分区域 -->
-                <section class="analysis-section">
-                    <div class="analysis-layout">
-                        <!-- 左侧：检测统计 -->
-                        <div class="stats-section">
-                            <h3>检测统计</h3>
-                            <div class="stats-container">
-                                <div class="stats-grid" id="stats-grid">
-                                    <!-- 统计信息将在这里动态生成 -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 右侧：安全评分 -->
-                        <div class="safety-section">
-                            <h3>安全评分</h3>
-                            <div class="safety-container">
-                                <div class="safety-score" id="safety-score">
-                                    <div class="score-display">
-                                        <span class="score-number">--</span>
-                                        <span class="score-label">分</span>
-                                    </div>
-                                    <div class="score-status">等待检测...</div>
-                                </div>
-                                <div class="safety-analysis" id="safety-analysis">
-                                    <!-- 安全分析将在这里显示 -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            <div class="mode-options">
+              <label class="mode-option">
+                <input
+                  type="radio"
+                  name="performance-mode"
+                  value="normal"
+                  checked
+                />
+                <span class="mode-label">
+                  <i class="fas fa-magic"></i>
+                  通用模型
+                </span>
+                <span class="mode-desc">综合性能最好 鲁棒性高</span>
+              </label>
+              <label class="mode-option">
+                <input type="radio" name="performance-mode" value="smart" />
+                <span class="mode-label">
+                  <i class="fas fa-bolt"></i>
+                  轻量化模型
+                </span>
+                <span class="mode-desc">速度最快</span>
+              </label>
+              <label class="mode-option">
+                <input
+                  type="radio"
+                  name="performance-mode"
+                  value="high_quality"
+                />
+                <span class="mode-label">
+                  <i class="fas fa-crosshairs"></i>
+                  小目标模型
+                </span>
+                <span class="mode-desc">聚焦小目标性能高的</span>
+              </label>
             </div>
+          </section>
 
-            <!-- 工地现场监控区域 -->
-            <div class="tab-content" id="site-monitoring-tab">
-                <!-- RTSP连接设置区域 -->
-                <section class="rtsp-connection-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-link"></i> RTSP视频流连接</h3>
-                        <div class="connection-status" id="site-connection-status">
-                            <i class="fas fa-circle"></i>
-                            <span>未连接</span>
-                        </div>
+          <!-- 实时监控和检测结果区域 -->
+          <section class="monitoring-section">
+            <div class="monitoring-layout">
+              <!-- 左侧：实时监控 -->
+              <div class="video-section">
+                <h3>实时监控</h3>
+                <div class="video-container">
+                  <div class="video-wrapper">
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="canvas" style="display: none"></canvas>
+                    <div class="video-overlay">
+                      <div class="camera-status" id="camera-status">
+                        <i class="fas fa-camera"></i>
+                        <span>等待摄像头权限...</span>
+                      </div>
                     </div>
-                    <div class="rtsp-config">
-                        <div class="config-row">
-                            <div class="config-group">
-                                <label for="rtsp-url">RTSP地址:</label>
-                                <input type="text" id="rtsp-url" placeholder="rtsp://192.168.1.3:554/stream1" value="rtsp://admin:gyx123456@192.168.1.3:554/stream1">
-                            </div>
-                        </div>
-                        <div class="config-row">
-                            <div class="config-group">
-                                <label for="rtsp-username">用户名:</label>
-                                <input type="text" id="rtsp-username" placeholder="admin" value="admin">
-                            </div>
-                            <div class="config-group">
-                                <label for="rtsp-password">密码:</label>
-                                <input type="password" id="rtsp-password" placeholder="password" value="gyx123456">
-                            </div>
-                        </div>
-                        <div class="config-actions">
-                            <button id="connect-rtsp-btn" class="btn btn-primary">
-                                <i class="fas fa-plug"></i>
-                                连接RTSP流
-                            </button>
-                            <button id="disconnect-rtsp-btn" class="btn btn-secondary" disabled>
-                                <i class="fas fa-unlink"></i>
-                                断开连接
-                            </button>
-                        </div>
-                    </div>
-                </section>
+                  </div>
+                  <div class="video-controls">
+                    <button id="start-btn" class="btn btn-primary" disabled>
+                      <i class="fas fa-play"></i> 开始检测
+                    </button>
+                    <button id="stop-btn" class="btn btn-secondary" disabled>
+                      <i class="fas fa-stop"></i> 停止检测
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                <!-- 检测模式选择区域 -->
-                <section class="detection-mode-section">
-                    <div class="mode-header">
-                        <h3>检测模式选择</h3>
-                        <div class="current-mode-indicator">通用模型</div>
+              <!-- 右侧：检测结果 -->
+              <div class="result-section">
+                <h3>检测结果</h3>
+                <div class="result-container">
+                  <div class="result-image-container">
+                    <img
+                      id="result-image"
+                      src=""
+                      alt="检测结果"
+                      style="display: none"
+                    />
+                    <div id="result-placeholder" class="result-placeholder">
+                      <i class="fas fa-eye"></i>
+                      <p>检测结果将在这里显示</p>
                     </div>
-                    <div class="mode-options">
-                        <label class="mode-option">
-                            <input type="radio" name="site-performance-mode" value="normal" checked>
-                            <span class="mode-label">
-                                <i class="fas fa-magic"></i>
-                                通用模型
-                            </span>
-                            <span class="mode-desc">综合性能最好 鲁棒性高</span>
-                        </label>
-                        <label class="mode-option">
-                            <input type="radio" name="site-performance-mode" value="smart">
-                            <span class="mode-label">
-                                <i class="fas fa-bolt"></i>
-                                轻量化模型
-                            </span>
-                            <span class="mode-desc">速度最快</span>
-                        </label>
-                        <label class="mode-option">
-                            <input type="radio" name="site-performance-mode" value="high_quality">
-                            <span class="mode-label">
-                                <i class="fas fa-crosshairs"></i>
-                                小目标模型
-                            </span>
-                            <span class="mode-desc">聚焦小目标性能高的</span>
-                        </label>
-                    </div>
-                </section>
-
-                <!-- 流畅度控制区域 -->
-                <section class="fluidity-control-section">
-                    <div class="section-header">
-                        <h3><i class="fas fa-tachometer-alt"></i> 流畅度控制</h3>
-                        <p class="section-description">调整监控画面的流畅度和检测频率</p>
-                    </div>
-                    <div class="fluidity-controls">
-                        <button class="fluidity-btn active" onclick="setSiteFluidityLevel('smooth')">
-                            <i class="fas fa-rocket"></i>
-                            <span>流畅模式</span>
-                            <small>20fps | 4s检测 | 优先流畅</small>
-                        </button>
-                        <button class="fluidity-btn" onclick="setSiteFluidityLevel('balanced')">
-                            <i class="fas fa-balance-scale"></i>
-                            <span>平衡模式</span>
-                            <small>15fps | 3s检测 | 平衡体验</small>
-                        </button>
-                        <button class="fluidity-btn" onclick="setSiteFluidityLevel('quality')">
-                            <i class="fas fa-gem"></i>
-                            <span>质量模式</span>
-                            <small>12fps | 2s检测 | 优先质量</small>
-                        </button>
-                        <button class="fluidity-btn frame-by-frame" onclick="setSiteFluidityLevel('frame_by_frame')">
-                            <i class="fas fa-layer-group"></i>
-                            <span>逐帧模式</span>
-                            <small>25fps | 智能检测 | 逐帧计算</small>
-                        </button>
-                    </div>
-                    <div class="fluidity-info">
-                        <p><i class="fas fa-info-circle"></i> 逐帧模式采用智能帧跳过技术，避免处理积压，提供最流畅的体验</p>
-                    </div>
-                </section>
-
-                <!-- 检测结果显示区域 -->
-                <section class="monitoring-section">
-                    <div class="centered-monitoring-layout">
-                        <!-- 检测结果居中显示 -->
-                        <div class="centered-result-section">
-                            <h3>工地现场检测结果</h3>
-                            <div class="centered-result-container">
-                                <div class="centered-result-image-container">
-                                    <img id="site-result-image" src="" alt="检测结果" style="display: none;">
-                                    <div id="site-result-placeholder" class="result-placeholder">
-                                        <i class="fas fa-eye"></i>
-                                        <p>检测结果将在这里显示</p>
-                                    </div>
-                                </div>
-                                <div class="detection-stats" id="site-detection-stats"></div>
-                            </div>
-                            <!-- 移动控制按钮到检测结果区域 -->
-                            <div class="centered-video-controls">
-                                <button id="site-start-btn" class="btn btn-primary" disabled>
-                                    <i class="fas fa-play"></i> 开始现场检测
-                                </button>
-                                <button id="site-stop-btn" class="btn btn-secondary" disabled>
-                                    <i class="fas fa-stop"></i> 停止现场检测
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- 隐藏的视频元素用于后台处理 -->
-                        <div class="hidden-video-elements" style="display: none;">
-                            <img id="site-video" src="" alt="RTSP视频流">
-                            <canvas id="site-canvas"></canvas>
-                            <div id="site-camera-status"></div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 检测统计和安全评分区域 -->
-                <section class="analysis-section">
-                    <div class="analysis-layout">
-                        <!-- 左侧：检测统计 -->
-                        <div class="stats-section">
-                            <h3>检测统计</h3>
-                            <div class="stats-container">
-                                <div class="stats-grid" id="site-stats-grid">
-                                    <!-- 统计信息将在这里动态生成 -->
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 右侧：安全评分 -->
-                        <div class="safety-section">
-                            <h3>安全评分</h3>
-                            <div class="safety-container">
-                                <div class="safety-score" id="site-safety-score">
-                                    <div class="score-display">
-                                        <span class="score-number">--</span>
-                                        <span class="score-label">分</span>
-                                    </div>
-                                    <div class="score-status">等待检测...</div>
-                                </div>
-                                <div class="safety-analysis" id="site-safety-analysis">
-                                    <!-- 安全分析将在这里显示 -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                  </div>
+                  <div class="detection-stats" id="detection-stats"></div>
+                </div>
+              </div>
             </div>
+          </section>
 
-            <!-- 图片检测区域 -->
-            <div class="tab-content" id="upload-tab">
-                <div class="image-detection-container">
-                    <!-- 上传区域 -->
-                    <section class="upload-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-upload"></i> 图片上传</h3>
-                            <p class="section-description">上传图片进行安全检测分析</p>
-                        </div>
-                        
-                        <div class="upload-zone" id="image-upload-zone">
-                            <div class="upload-area" id="upload-area">
-                                <div class="upload-content">
-                                    <div class="upload-icon">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                    </div>
-                                    <h4 class="upload-title">选择或拖拽图片文件</h4>
-                                    <p class="upload-hint">支持 JPG、PNG、JPEG 格式，最大 10MB</p>
-                                    <div class="upload-actions">
-                                        <input type="file" id="file-input" accept="image/*" style="display: none;">
-                                        <button class="btn btn-primary upload-btn" onclick="document.getElementById('file-input').click()">
-                                            <i class="fas fa-folder-open"></i>
-                                            浏览文件
-                                        </button>
-                                        <span class="upload-separator">或</span>
-                                        <span class="drag-hint">拖拽文件到此处</span>
-                                    </div>
-                                </div>
-                                <div class="upload-progress" id="upload-progress" style="display: none;">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="progress-fill"></div>
-                                    </div>
-                                    <span class="progress-text" id="progress-text">上传中...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- 检测结果区域 -->
-                    <section class="detection-results-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-search"></i> 检测结果</h3>
-                            <p class="section-description">图片分析结果与安全评估</p>
-                        </div>
-                        
-                        <div class="results-layout">
-                            <!-- 图片结果显示 -->
-                            <div class="image-result-panel">
-                                <div class="panel-header">
-                                    <h4><i class="fas fa-image"></i> 检测图片</h4>
-                                    <div class="panel-actions">
-                                        <button class="btn btn-sm btn-outline" id="download-result-btn" style="display: none;">
-                                            <i class="fas fa-download"></i>
-                                            下载结果
-                                        </button>
-                                        <button class="btn btn-sm btn-outline" id="fullscreen-btn" style="display: none;">
-                                            <i class="fas fa-expand"></i>
-                                            全屏查看
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="image-container">
-                                    <div class="image-comparison">
-                                        <!-- 原始图片 -->
-                                        <div class="image-panel original-panel">
-                                            <div class="image-header">
-                                                <span class="image-label">原始图片</span>
-                                            </div>
-                                            <div class="image-wrapper">
-                                                <img id="original-image" src="" alt="原始图片" style="display: none;">
-                                                <div id="original-placeholder" class="image-placeholder">
-                                                    <i class="fas fa-image"></i>
-                                                    <p>原始图片</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- 检测结果图片 -->
-                                        <div class="image-panel result-panel">
-                                            <div class="image-header">
-                                                <span class="image-label">检测结果</span>
-                                                <span class="processing-badge" id="processing-badge" style="display: none;">
-                                                    <i class="fas fa-spinner fa-spin"></i>
-                                                    处理中...
-                                                </span>
-                                            </div>
-                                            <div class="image-wrapper">
-                                                <img id="upload-result-image" src="" alt="检测结果" style="display: none;">
-                                                <div id="upload-placeholder" class="image-placeholder">
-                                                    <i class="fas fa-search"></i>
-                                                    <p>检测结果将在这里显示</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 统计信息面板 -->
-                            <div class="stats-result-panel">
-                                <div class="panel-header">
-                                    <h4><i class="fas fa-chart-bar"></i> 检测统计</h4>
-                                </div>
-                                <div class="stats-content">
-                                    <div id="upload-detection-stats" class="detection-stats-display">
-                                        <div class="stats-placeholder">
-                                            <i class="fas fa-chart-line"></i>
-                                            <p>上传图片后显示检测统计</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 安全评估面板 -->
-                            <div class="safety-result-panel">
-                                <div class="panel-header">
-                                    <h4><i class="fas fa-shield-alt"></i> 安全评估</h4>
-                                </div>
-                                <div class="safety-content">
-                                    <div id="upload-safety-analysis" class="safety-analysis-display">
-                                        <div class="safety-placeholder">
-                                            <i class="fas fa-shield-alt"></i>
-                                            <p>上传图片后显示安全评估</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- 操作历史区域 -->
-                    <section class="history-section" style="display: none;" id="upload-history-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-history"></i> 检测历史</h3>
-                            <button class="btn btn-sm btn-outline" id="clear-history-btn">
-                                <i class="fas fa-trash"></i>
-                                清空历史
-                            </button>
-                        </div>
-                        <div class="history-list" id="upload-history-list">
-                            <!-- 历史记录将在这里动态生成 -->
-                        </div>
-                    </section>
+          <!-- 检测统计和安全评分区域 -->
+          <section class="analysis-section">
+            <div class="analysis-layout">
+              <!-- 左侧：检测统计 -->
+              <div class="stats-section">
+                <h3>检测统计</h3>
+                <div class="stats-container">
+                  <div class="stats-grid" id="stats-grid">
+                    <!-- 统计信息将在这里动态生成 -->
+                  </div>
                 </div>
-            </div>
+              </div>
 
-            <!-- 批量检测区域 -->
-            <div class="tab-content" id="batch-tab">
-                <div class="batch-detection-container">
-                    <!-- 批量上传区域 -->
-                    <section class="batch-upload-section">
-                        <div class="section-header">
-                            <h3><i class="fas fa-images"></i> 批量图片上传</h3>
-                            <p class="section-description">同时上传多张图片进行批量安全检测分析</p>
-                        </div>
-                        
-                        <div class="batch-upload-zone" id="batch-upload-zone">
-                            <div class="batch-upload-area" id="batch-upload-area">
-                                <div class="upload-content">
-                                    <div class="upload-icon">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                    </div>
-                                    <h4 class="upload-title">选择多个图片文件</h4>
-                                    <p class="upload-hint">支持 JPG、PNG、JPEG 格式，单个文件最大 10MB</p>
-                                    <div class="upload-actions">
-                                        <input type="file" id="batch-file-input" accept="image/*" multiple style="display: none;">
-                                        <button class="btn btn-primary upload-btn" onclick="document.getElementById('batch-file-input').click()">
-                                            <i class="fas fa-folder-open"></i>
-                                            选择多个文件
-                                        </button>
-                                        <span class="upload-separator">或</span>
-                                        <span class="drag-hint">拖拽多个文件到此处</span>
-                                    </div>
-                                </div>
-                                <div class="batch-progress" id="batch-progress" style="display: none;">
-                                    <div class="progress-info">
-                                        <span class="progress-text" id="batch-progress-text">准备中...</span>
-                                        <span class="progress-percentage" id="batch-progress-percentage">0%</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="batch-progress-fill"></div>
-                                    </div>
-                                    <div class="progress-details" id="batch-progress-details"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 文件列表预览 -->
-                        <div class="batch-file-list" id="batch-file-list" style="display: none;">
-                            <div class="file-list-header">
-                                <h4><i class="fas fa-list"></i> 待处理文件列表</h4>
-                                <div class="file-list-actions">
-                                    <button class="btn btn-secondary" id="clear-files-btn">
-                                        <i class="fas fa-trash"></i>
-                                        清空列表
-                                    </button>
-                                    <button class="btn btn-success" id="start-batch-btn">
-                                        <i class="fas fa-play"></i>
-                                        开始批量检测
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="file-list-content" id="file-list-content"></div>
-                        </div>
-                    </section>
-
-                    <!-- 批量检测结果区域 -->
-                    <section class="batch-results-section" id="batch-results-section" style="display: none;">
-                        <div class="section-header">
-                            <h3><i class="fas fa-chart-bar"></i> 批量检测结果</h3>
-                            <p class="section-description">检测结果统计与详细分析</p>
-                        </div>
-                        
-                        <!-- 总体统计 -->
-                        <div class="batch-summary">
-                            <div class="summary-stats">
-                                <div class="summary-card">
-                                    <div class="summary-icon">
-                                        <i class="fas fa-images"></i>
-                                    </div>
-                                    <div class="summary-content">
-                                        <div class="summary-number" id="total-processed">0</div>
-                                        <div class="summary-label">处理图片</div>
-                                    </div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="summary-icon success">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="summary-content">
-                                        <div class="summary-number" id="successful-detections">0</div>
-                                        <div class="summary-label">检测成功</div>
-                                    </div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="summary-icon warning">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
-                                    <div class="summary-content">
-                                        <div class="summary-number" id="safety-warnings">0</div>
-                                        <div class="summary-label">安全警告</div>
-                                    </div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="summary-icon danger">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <div class="summary-content">
-                                        <div class="summary-number" id="avg-safety-score">0</div>
-                                        <div class="summary-label">平均安全分</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 结果操作 -->
-                            <div class="batch-actions">
-                                <button class="btn btn-primary" id="download-all-btn">
-                                    <i class="fas fa-download"></i>
-                                    下载所有结果
-                                </button>
-                                <button class="btn btn-secondary" id="export-report-btn">
-                                    <i class="fas fa-file-export"></i>
-                                    导出检测报告
-                                </button>
-                                <button class="btn btn-secondary" id="clear-results-btn">
-                                    <i class="fas fa-trash-alt"></i>
-                                    清空结果
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- 过滤和排序控制 -->
-                        <div class="batch-controls">
-                            <div class="filter-controls">
-                                <label class="control-label">筛选条件:</label>
-                                <select class="control-select" id="safety-filter">
-                                    <option value="all">全部图片</option>
-                                    <option value="safe">安全图片 (≥80分)</option>
-                                    <option value="warning">警告图片 (60-79分)</option>
-                                    <option value="danger">危险图片 (<60分)</option>
-                                </select>
-                                <select class="control-select" id="detection-filter">
-                                    <option value="all">全部检测</option>
-                                    <option value="has-objects">有检测目标</option>
-                                    <option value="no-objects">无检测目标</option>
-                                </select>
-                            </div>
-                            <div class="sort-controls">
-                                <label class="control-label">排序方式:</label>
-                                <select class="control-select" id="sort-option">
-                                    <option value="filename">文件名</option>
-                                    <option value="safety-score">安全分数</option>
-                                    <option value="detection-count">检测数量</option>
-                                    <option value="upload-time">上传时间</option>
-                                </select>
-                                <button class="btn btn-small" id="sort-order-btn" data-order="desc">
-                                    <i class="fas fa-sort-amount-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- 结果展示网格 -->
-                        <div class="batch-gallery" id="batch-gallery"></div>
-                        
-                        <!-- 分页控制 -->
-                        <div class="batch-pagination" id="batch-pagination" style="display: none;">
-                            <button class="btn btn-small" id="prev-page-btn" disabled>
-                                <i class="fas fa-chevron-left"></i>
-                                上一页
-                            </button>
-                            <span class="pagination-info" id="pagination-info">第 1 页，共 1 页</span>
-                            <button class="btn btn-small" id="next-page-btn" disabled>
-                                下一页
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </section>
-                    
-                    <!-- 详细查看模态框 -->
-                    <div class="batch-modal" id="batch-detail-modal" style="display: none;">
-                        <div class="modal-overlay" id="modal-overlay"></div>
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 id="modal-title">检测详情</h4>
-                                <button class="modal-close" id="modal-close-btn">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="modal-body" id="modal-body">
-                                <!-- 动态内容 -->
-                            </div>
-                        </div>
+              <!-- 右侧：安全评分 -->
+              <div class="safety-section">
+                <h3>安全评分</h3>
+                <div class="safety-container">
+                  <div class="safety-score" id="safety-score">
+                    <div class="score-display">
+                      <span class="score-number">--</span>
+                      <span class="score-label">分</span>
                     </div>
+                    <div class="score-status">等待检测...</div>
+                  </div>
+                  <div class="safety-analysis" id="safety-analysis">
+                    <!-- 安全分析将在这里显示 -->
+                  </div>
                 </div>
+              </div>
             </div>
-        </main>
-
-        <!-- 固定底部检测类别说明 -->
-        <footer class="class-info">
-            <h3>检测类别说明</h3>
-            <div class="class-grid">
-                <div class="class-item" style="--color: #FF5733;">
-                    <div class="class-color"></div>
-                    <span>👷 人员</span>
-                </div>
-                <div class="class-item" style="--color: #33FF57;">
-                    <div class="class-color"></div>
-                    <span>⛑️ 安全帽</span>
-                </div>
-                <div class="class-item" style="--color: #FF3333;">
-                    <div class="class-color"></div>
-                    <span>🚫 无安全帽</span>
-                </div>
-                <div class="class-item" style="--color: #3357FF;">
-                    <div class="class-color"></div>
-                    <span>😷 口罩</span>
-                </div>
-                <div class="class-item" style="--color: #FF33A8;">
-                    <div class="class-color"></div>
-                    <span>🚫 无口罩</span>
-                </div>
-                <div class="class-item" style="--color: #F0FF33;">
-                    <div class="class-color"></div>
-                    <span>🦺 安全背心</span>
-                </div>
-                <div class="class-item" style="--color: #FF8333;">
-                    <div class="class-color"></div>
-                    <span>🚫 无安全背心</span>
-                </div>
-                <div class="class-item" style="--color: #33FFF0;">
-                    <div class="class-color"></div>
-                    <span>🔺 安全锥</span>
-                </div>
-                <div class="class-item" style="--color: #B533FF;">
-                    <div class="class-color"></div>
-                    <span>🚜 机械</span>
-                </div>
-                <div class="class-item" style="--color: #FF33F0;">
-                    <div class="class-color"></div>
-                    <span>🚗 车辆</span>
-                </div>
-            </div>
-        </footer>
-
-        <!-- 加载动画 -->
-        <div id="loading" class="loading-overlay" style="display: none;">
-            <div class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>正在处理中...</p>
-            </div>
+          </section>
         </div>
 
-        <!-- 通知区域 -->
-        <div id="notification" class="notification" style="display: none;">
-            <div class="notification-content">
-                <i class="notification-icon"></i>
-                <span class="notification-message"></span>
+        <!-- 工地现场监控区域 -->
+        <div class="tab-content" id="site-monitoring-tab">
+          <!-- RTSP连接设置区域 -->
+          <section class="rtsp-connection-section">
+            <div class="section-header">
+              <h3><i class="fas fa-link"></i> RTSP视频流连接</h3>
+              <div class="connection-status" id="site-connection-status">
+                <i class="fas fa-circle"></i>
+                <span>未连接</span>
+              </div>
             </div>
+            <div class="rtsp-config">
+              <div class="config-row">
+                <div class="config-group">
+                  <label for="rtsp-url">RTSP地址:</label>
+                  <input
+                    type="text"
+                    id="rtsp-url"
+                    placeholder="rtsp://192.168.1.3:554/stream1"
+                    value="rtsp://admin:gyx123456@192.168.1.3:554/stream1"
+                  />
+                </div>
+              </div>
+              <div class="config-row">
+                <div class="config-group">
+                  <label for="rtsp-username">用户名:</label>
+                  <input
+                    type="text"
+                    id="rtsp-username"
+                    placeholder="admin"
+                    value="admin"
+                  />
+                </div>
+                <div class="config-group">
+                  <label for="rtsp-password">密码:</label>
+                  <input
+                    type="password"
+                    id="rtsp-password"
+                    placeholder="password"
+                    value="gyx123456"
+                  />
+                </div>
+              </div>
+              <div class="config-actions">
+                <button id="connect-rtsp-btn" class="btn btn-primary">
+                  <i class="fas fa-plug"></i>
+                  连接RTSP流
+                </button>
+                <button
+                  id="disconnect-rtsp-btn"
+                  class="btn btn-secondary"
+                  disabled
+                >
+                  <i class="fas fa-unlink"></i>
+                  断开连接
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 检测模式选择区域 -->
+          <section class="detection-mode-section">
+            <div class="mode-header">
+              <h3>检测模式选择</h3>
+              <div class="current-mode-indicator">通用模型</div>
+            </div>
+            <div class="mode-options">
+              <label class="mode-option">
+                <input
+                  type="radio"
+                  name="site-performance-mode"
+                  value="normal"
+                  checked
+                />
+                <span class="mode-label">
+                  <i class="fas fa-magic"></i>
+                  通用模型
+                </span>
+                <span class="mode-desc">综合性能最好 鲁棒性高</span>
+              </label>
+              <label class="mode-option">
+                <input
+                  type="radio"
+                  name="site-performance-mode"
+                  value="smart"
+                />
+                <span class="mode-label">
+                  <i class="fas fa-bolt"></i>
+                  轻量化模型
+                </span>
+                <span class="mode-desc">速度最快</span>
+              </label>
+              <label class="mode-option">
+                <input
+                  type="radio"
+                  name="site-performance-mode"
+                  value="high_quality"
+                />
+                <span class="mode-label">
+                  <i class="fas fa-crosshairs"></i>
+                  小目标模型
+                </span>
+                <span class="mode-desc">聚焦小目标性能高的</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- 流畅度控制区域 -->
+          <section class="fluidity-control-section">
+            <div class="section-header">
+              <h3><i class="fas fa-tachometer-alt"></i> 流畅度控制</h3>
+              <p class="section-description">调整监控画面的流畅度和检测频率</p>
+            </div>
+            <div class="fluidity-controls">
+              <button
+                class="fluidity-btn active"
+                onclick="setSiteFluidityLevel('smooth')"
+              >
+                <i class="fas fa-rocket"></i>
+                <span>流畅模式</span>
+                <small>20fps | 4s检测 | 优先流畅</small>
+              </button>
+              <button
+                class="fluidity-btn"
+                onclick="setSiteFluidityLevel('balanced')"
+              >
+                <i class="fas fa-balance-scale"></i>
+                <span>平衡模式</span>
+                <small>15fps | 3s检测 | 平衡体验</small>
+              </button>
+              <button
+                class="fluidity-btn"
+                onclick="setSiteFluidityLevel('quality')"
+              >
+                <i class="fas fa-gem"></i>
+                <span>质量模式</span>
+                <small>12fps | 2s检测 | 优先质量</small>
+              </button>
+              <button
+                class="fluidity-btn frame-by-frame"
+                onclick="setSiteFluidityLevel('frame_by_frame')"
+              >
+                <i class="fas fa-layer-group"></i>
+                <span>逐帧模式</span>
+                <small>25fps | 智能检测 | 逐帧计算</small>
+              </button>
+            </div>
+            <div class="fluidity-info">
+              <p>
+                <i class="fas fa-info-circle"></i>
+                逐帧模式采用智能帧跳过技术，避免处理积压，提供最流畅的体验
+              </p>
+            </div>
+          </section>
+
+          <!-- 检测结果显示区域 -->
+          <section class="monitoring-section">
+            <div class="centered-monitoring-layout">
+              <!-- 检测结果居中显示 -->
+              <div class="centered-result-section">
+                <h3>工地现场检测结果</h3>
+                <div class="centered-result-container">
+                  <div class="centered-result-image-container">
+                    <img
+                      id="site-result-image"
+                      src=""
+                      alt="检测结果"
+                      style="display: none"
+                    />
+                    <div
+                      id="site-result-placeholder"
+                      class="result-placeholder"
+                    >
+                      <i class="fas fa-eye"></i>
+                      <p>检测结果将在这里显示</p>
+                    </div>
+                  </div>
+                  <div class="detection-stats" id="site-detection-stats"></div>
+                </div>
+                <!-- 移动控制按钮到检测结果区域 -->
+                <div class="centered-video-controls">
+                  <button id="site-start-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-play"></i> 开始现场检测
+                  </button>
+                  <button id="site-stop-btn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-stop"></i> 停止现场检测
+                  </button>
+                </div>
+              </div>
+
+              <!-- 隐藏的视频元素用于后台处理 -->
+              <div class="hidden-video-elements" style="display: none">
+                <img id="site-video" src="" alt="RTSP视频流" />
+                <canvas id="site-canvas"></canvas>
+                <div id="site-camera-status"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 检测统计和安全评分区域 -->
+          <section class="analysis-section">
+            <div class="analysis-layout">
+              <!-- 左侧：检测统计 -->
+              <div class="stats-section">
+                <h3>检测统计</h3>
+                <div class="stats-container">
+                  <div class="stats-grid" id="site-stats-grid">
+                    <!-- 统计信息将在这里动态生成 -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- 右侧：安全评分 -->
+              <div class="safety-section">
+                <h3>安全评分</h3>
+                <div class="safety-container">
+                  <div class="safety-score" id="site-safety-score">
+                    <div class="score-display">
+                      <span class="score-number">--</span>
+                      <span class="score-label">分</span>
+                    </div>
+                    <div class="score-status">等待检测...</div>
+                  </div>
+                  <div class="safety-analysis" id="site-safety-analysis">
+                    <!-- 安全分析将在这里显示 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
+
+        <!-- 图片检测区域 -->
+        <div class="tab-content" id="upload-tab">
+          <div class="image-detection-container">
+            <!-- 上传区域 -->
+            <section class="upload-section">
+              <div class="section-header">
+                <h3><i class="fas fa-upload"></i> 图片上传</h3>
+                <p class="section-description">上传图片进行安全检测分析</p>
+              </div>
+
+              <div class="upload-zone" id="image-upload-zone">
+                <div class="upload-area" id="upload-area">
+                  <div class="upload-content">
+                    <div class="upload-icon">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h4 class="upload-title">选择或拖拽图片文件</h4>
+                    <p class="upload-hint">
+                      支持 JPG、PNG、JPEG 格式，最大 10MB
+                    </p>
+                    <div class="upload-actions">
+                      <input
+                        type="file"
+                        id="file-input"
+                        accept="image/*"
+                        style="display: none"
+                      />
+                      <button
+                        class="btn btn-primary upload-btn"
+                        onclick="document.getElementById('file-input').click()"
+                      >
+                        <i class="fas fa-folder-open"></i>
+                        浏览文件
+                      </button>
+                      <span class="upload-separator">或</span>
+                      <span class="drag-hint">拖拽文件到此处</span>
+                    </div>
+                  </div>
+                  <div
+                    class="upload-progress"
+                    id="upload-progress"
+                    style="display: none"
+                  >
+                    <div class="progress-bar">
+                      <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text"
+                      >上传中...</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 检测结果区域 -->
+            <section class="detection-results-section">
+              <div class="section-header">
+                <h3><i class="fas fa-search"></i> 检测结果</h3>
+                <p class="section-description">图片分析结果与安全评估</p>
+              </div>
+
+              <div class="results-layout">
+                <!-- 图片结果显示 -->
+                <div class="image-result-panel">
+                  <div class="panel-header">
+                    <h4><i class="fas fa-image"></i> 检测图片</h4>
+                    <div class="panel-actions">
+                      <button
+                        class="btn btn-sm btn-outline"
+                        id="download-result-btn"
+                        style="display: none"
+                      >
+                        <i class="fas fa-download"></i>
+                        下载结果
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline"
+                        id="fullscreen-btn"
+                        style="display: none"
+                      >
+                        <i class="fas fa-expand"></i>
+                        全屏查看
+                      </button>
+                    </div>
+                  </div>
+                  <div class="image-container">
+                    <div class="image-comparison">
+                      <!-- 原始图片 -->
+                      <div class="image-panel original-panel">
+                        <div class="image-header">
+                          <span class="image-label">原始图片</span>
+                        </div>
+                        <div class="image-wrapper">
+                          <img
+                            id="original-image"
+                            src=""
+                            alt="原始图片"
+                            style="display: none"
+                          />
+                          <div
+                            id="original-placeholder"
+                            class="image-placeholder"
+                          >
+                            <i class="fas fa-image"></i>
+                            <p>原始图片</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- 检测结果图片 -->
+                      <div class="image-panel result-panel">
+                        <div class="image-header">
+                          <span class="image-label">检测结果</span>
+                          <span
+                            class="processing-badge"
+                            id="processing-badge"
+                            style="display: none"
+                          >
+                            <i class="fas fa-spinner fa-spin"></i>
+                            处理中...
+                          </span>
+                        </div>
+                        <div class="image-wrapper">
+                          <img
+                            id="upload-result-image"
+                            src=""
+                            alt="检测结果"
+                            style="display: none"
+                          />
+                          <div
+                            id="upload-placeholder"
+                            class="image-placeholder"
+                          >
+                            <i class="fas fa-search"></i>
+                            <p>检测结果将在这里显示</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 统计信息面板 -->
+                <div class="stats-result-panel">
+                  <div class="panel-header">
+                    <h4><i class="fas fa-chart-bar"></i> 检测统计</h4>
+                  </div>
+                  <div class="stats-content">
+                    <div
+                      id="upload-detection-stats"
+                      class="detection-stats-display"
+                    >
+                      <div class="stats-placeholder">
+                        <i class="fas fa-chart-line"></i>
+                        <p>上传图片后显示检测统计</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 安全评估面板 -->
+                <div class="safety-result-panel">
+                  <div class="panel-header">
+                    <h4><i class="fas fa-shield-alt"></i> 安全评估</h4>
+                  </div>
+                  <div class="safety-content">
+                    <div
+                      id="upload-safety-analysis"
+                      class="safety-analysis-display"
+                    >
+                      <div class="safety-placeholder">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>上传图片后显示安全评估</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 操作历史区域 -->
+            <section
+              class="history-section"
+              style="display: none"
+              id="upload-history-section"
+            >
+              <div class="section-header">
+                <h3><i class="fas fa-history"></i> 检测历史</h3>
+                <button class="btn btn-sm btn-outline" id="clear-history-btn">
+                  <i class="fas fa-trash"></i>
+                  清空历史
+                </button>
+              </div>
+              <div class="history-list" id="upload-history-list">
+                <!-- 历史记录将在这里动态生成 -->
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- 批量检测区域 -->
+        <div class="tab-content" id="batch-tab">
+          <div class="batch-detection-container">
+            <!-- 批量上传区域 -->
+            <section class="batch-upload-section">
+              <div class="section-header">
+                <h3><i class="fas fa-images"></i> 批量图片上传</h3>
+                <p class="section-description">
+                  同时上传多张图片进行批量安全检测分析
+                </p>
+              </div>
+
+              <div class="batch-upload-zone" id="batch-upload-zone">
+                <div class="batch-upload-area" id="batch-upload-area">
+                  <div class="upload-content">
+                    <div class="upload-icon">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h4 class="upload-title">选择多个图片文件</h4>
+                    <p class="upload-hint">
+                      支持 JPG、PNG、JPEG 格式，单个文件最大 10MB
+                    </p>
+                    <div class="upload-actions">
+                      <input
+                        type="file"
+                        id="batch-file-input"
+                        accept="image/*"
+                        multiple
+                        style="display: none"
+                      />
+                      <button
+                        class="btn btn-primary upload-btn"
+                        onclick="document.getElementById('batch-file-input').click()"
+                      >
+                        <i class="fas fa-folder-open"></i>
+                        选择多个文件
+                      </button>
+                      <span class="upload-separator">或</span>
+                      <span class="drag-hint">拖拽多个文件到此处</span>
+                    </div>
+                  </div>
+                  <div
+                    class="batch-progress"
+                    id="batch-progress"
+                    style="display: none"
+                  >
+                    <div class="progress-info">
+                      <span class="progress-text" id="batch-progress-text"
+                        >准备中...</span
+                      >
+                      <span
+                        class="progress-percentage"
+                        id="batch-progress-percentage"
+                        >0%</span
+                      >
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" id="batch-progress-fill"></div>
+                    </div>
+                    <div
+                      class="progress-details"
+                      id="batch-progress-details"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 文件列表预览 -->
+              <div
+                class="batch-file-list"
+                id="batch-file-list"
+                style="display: none"
+              >
+                <div class="file-list-header">
+                  <h4><i class="fas fa-list"></i> 待处理文件列表</h4>
+                  <div class="file-list-actions">
+                    <button class="btn btn-secondary" id="clear-files-btn">
+                      <i class="fas fa-trash"></i>
+                      清空列表
+                    </button>
+                    <button class="btn btn-success" id="start-batch-btn">
+                      <i class="fas fa-play"></i>
+                      开始批量检测
+                    </button>
+                  </div>
+                </div>
+                <div class="file-list-content" id="file-list-content"></div>
+              </div>
+            </section>
+
+            <!-- 批量检测结果区域 -->
+            <section
+              class="batch-results-section"
+              id="batch-results-section"
+              style="display: none"
+            >
+              <div class="section-header">
+                <h3><i class="fas fa-chart-bar"></i> 批量检测结果</h3>
+                <p class="section-description">检测结果统计与详细分析</p>
+              </div>
+
+              <!-- 总体统计 -->
+              <div class="batch-summary">
+                <div class="summary-stats">
+                  <div class="summary-card">
+                    <div class="summary-icon">
+                      <i class="fas fa-images"></i>
+                    </div>
+                    <div class="summary-content">
+                      <div class="summary-number" id="total-processed">0</div>
+                      <div class="summary-label">处理图片</div>
+                    </div>
+                  </div>
+                  <div class="summary-card">
+                    <div class="summary-icon success">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="summary-content">
+                      <div class="summary-number" id="successful-detections">
+                        0
+                      </div>
+                      <div class="summary-label">检测成功</div>
+                    </div>
+                  </div>
+                  <div class="summary-card">
+                    <div class="summary-icon warning">
+                      <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="summary-content">
+                      <div class="summary-number" id="safety-warnings">0</div>
+                      <div class="summary-label">安全警告</div>
+                    </div>
+                  </div>
+                  <div class="summary-card">
+                    <div class="summary-icon danger">
+                      <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="summary-content">
+                      <div class="summary-number" id="avg-safety-score">0</div>
+                      <div class="summary-label">平均安全分</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 结果操作 -->
+                <div class="batch-actions">
+                  <button class="btn btn-primary" id="download-all-btn">
+                    <i class="fas fa-download"></i>
+                    下载所有结果
+                  </button>
+                  <button class="btn btn-secondary" id="export-report-btn">
+                    <i class="fas fa-file-export"></i>
+                    导出检测报告
+                  </button>
+                  <button class="btn btn-secondary" id="clear-results-btn">
+                    <i class="fas fa-trash-alt"></i>
+                    清空结果
+                  </button>
+                </div>
+              </div>
+
+              <!-- 过滤和排序控制 -->
+              <div class="batch-controls">
+                <div class="filter-controls">
+                  <label class="control-label">筛选条件:</label>
+                  <select class="control-select" id="safety-filter">
+                    <option value="all">全部图片</option>
+                    <option value="safe">安全图片 (≥80分)</option>
+                    <option value="warning">警告图片 (60-79分)</option>
+                    <option value="danger">危险图片 (<60分)</option>
+                  </select>
+                  <select class="control-select" id="detection-filter">
+                    <option value="all">全部检测</option>
+                    <option value="has-objects">有检测目标</option>
+                    <option value="no-objects">无检测目标</option>
+                  </select>
+                </div>
+                <div class="sort-controls">
+                  <label class="control-label">排序方式:</label>
+                  <select class="control-select" id="sort-option">
+                    <option value="filename">文件名</option>
+                    <option value="safety-score">安全分数</option>
+                    <option value="detection-count">检测数量</option>
+                    <option value="upload-time">上传时间</option>
+                  </select>
+                  <button
+                    class="btn btn-small"
+                    id="sort-order-btn"
+                    data-order="desc"
+                  >
+                    <i class="fas fa-sort-amount-down"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 结果展示网格 -->
+              <div class="batch-gallery" id="batch-gallery"></div>
+
+              <!-- 分页控制 -->
+              <div
+                class="batch-pagination"
+                id="batch-pagination"
+                style="display: none"
+              >
+                <button class="btn btn-small" id="prev-page-btn" disabled>
+                  <i class="fas fa-chevron-left"></i>
+                  上一页
+                </button>
+                <span class="pagination-info" id="pagination-info"
+                  >第 1 页，共 1 页</span
+                >
+                <button class="btn btn-small" id="next-page-btn" disabled>
+                  下一页
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </section>
+
+            <!-- 详细查看模态框 -->
+            <div
+              class="batch-modal"
+              id="batch-detail-modal"
+              style="display: none"
+            >
+              <div class="modal-overlay" id="modal-overlay"></div>
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 id="modal-title">检测详情</h4>
+                  <button class="modal-close" id="modal-close-btn">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                  <!-- 动态内容 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 固定底部检测类别说明 -->
+      <footer class="class-info">
+        <h3>检测类别说明</h3>
+        <div class="class-grid">
+          <div class="class-item" style="--color: #ff5733">
+            <div class="class-color"></div>
+            <span>👷 人员</span>
+          </div>
+          <div class="class-item" style="--color: #33ff57">
+            <div class="class-color"></div>
+            <span>⛑️ 安全帽</span>
+          </div>
+          <div class="class-item" style="--color: #ff3333">
+            <div class="class-color"></div>
+            <span>🚫 无安全帽</span>
+          </div>
+          <div class="class-item" style="--color: #3357ff">
+            <div class="class-color"></div>
+            <span>😷 口罩</span>
+          </div>
+          <div class="class-item" style="--color: #ff33a8">
+            <div class="class-color"></div>
+            <span>🚫 无口罩</span>
+          </div>
+          <div class="class-item" style="--color: #f0ff33">
+            <div class="class-color"></div>
+            <span>🦺 安全背心</span>
+          </div>
+          <div class="class-item" style="--color: #ff8333">
+            <div class="class-color"></div>
+            <span>🚫 无安全背心</span>
+          </div>
+          <div class="class-item" style="--color: #33fff0">
+            <div class="class-color"></div>
+            <span>🔺 安全锥</span>
+          </div>
+          <div class="class-item" style="--color: #b533ff">
+            <div class="class-color"></div>
+            <span>🚜 机械</span>
+          </div>
+          <div class="class-item" style="--color: #ff33f0">
+            <div class="class-color"></div>
+            <span>🚗 车辆</span>
+          </div>
+        </div>
+      </footer>
+
+      <!-- 加载动画 -->
+      <div id="loading" class="loading-overlay" style="display: none">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>正在处理中...</p>
+        </div>
+      </div>
+
+      <!-- 通知区域 -->
+      <div id="notification" class="notification" style="display: none">
+        <div class="notification-content">
+          <i class="notification-icon"></i>
+          <span class="notification-message"></span>
+        </div>
+      </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/image-detection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/batch-detection.js') }}"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
+  </body>
 </html>
