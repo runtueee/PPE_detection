@@ -16,20 +16,22 @@
 
 ## 🎯 检测目标
 
-| 安全装备 | 违规行为 | 现场设备 |
-|----------|----------|----------|
-| 👷‍♂️ **安全帽** (Hardhat) | ❌ **未戴安全帽** (NO-Hardhat) | 🚧 **安全锥** (Safety Cone) |
-| 😷 **口罩** (Mask) | ❌ **未戴口罩** (NO-Mask) | 🔧 **机械设备** (machinery) |
-| 🦺 **安全背心** (Safety Vest) | ❌ **未穿安全背心** (NO-Safety Vest) | 🚛 **车辆** (vehicle) |
-| 👤 **人员** (Person) | | |
+| 安全装备                      | 违规行为                             | 现场设备                    |
+| ----------------------------- | ------------------------------------ | --------------------------- |
+| 👷‍♂️ **安全帽** (Hardhat)       | ❌ **未戴安全帽** (NO-Hardhat)       | 🚧 **安全锥** (Safety Cone) |
+| 😷 **口罩** (Mask)            | ❌ **未戴口罩** (NO-Mask)            | 🔧 **机械设备** (machinery) |
+| 🦺 **安全背心** (Safety Vest) | ❌ **未穿安全背心** (NO-Safety Vest) | 🚛 **车辆** (vehicle)       |
+| 👤 **人员** (Person)          |                                      |                             |
 
 ## 🚀 快速开始
 
 ### 环境要求
+
 - Python 3.8+
 - CUDA支持（可选，推荐GPU加速）
 
 ### 安装与运行
+
 ```bash
 # 1. 克隆项目
 git clone <https://github.com/runtueee/PPE_detection.git>
@@ -51,6 +53,7 @@ python app.py
 详细的Web应用部署和使用说明，请查看 [YOLO_UPDATE_new](YOLO_UPDATE_new/) 文件夹中的README文档。
 
 该文件夹包含了完整的前端应用代码，包括：
+
 - Flask Web应用
 - 现代化用户界面
 - 实时检测功能
@@ -80,10 +83,11 @@ python app.py
 ## 🔧 模型训练
 
 ### 训练自定义模型
+
 ```bash
 # 使用脚本训练模型
-python script/split_dataset.py  # 分割数据集
-python script/generate_sliced_dataset.py  # 数据增强
+python script/split_dataset.py           # 分割数据集
+python script/generate_sliced_dataset.py # 数据增强
 
 # 训练YOLO模型
 yolo train data=css-data/safeHat.yaml model=yolov8s.pt epochs=100 imgsz=640
@@ -93,6 +97,7 @@ python script/evaluate_models.py --models best.pt --data css-data/safeHat.yaml
 ```
 
 ### 模型性能优化
+
 - **小目标检测优化**: 使用tile训练策略提高远距离检测能力
 - **数据增强**: 通过切片技术增加训练样本多样性
 - **多模型对比**: 支持批量评估不同模型配置的性能
@@ -100,7 +105,7 @@ python script/evaluate_models.py --models best.pt --data css-data/safeHat.yaml
 ## 🎯 应用场景
 
 - **建筑工地**: 实时监控工人安全装备佩戴情况
-- **工业制造**: 生产线安全合规检查  
+- **工业制造**: 生产线安全合规检查
 - **教育培训**: 安全知识教育和技能培训
 - **公共场所**: 疫情防控和安全监控
 
